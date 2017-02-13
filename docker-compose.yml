@@ -1,5 +1,9 @@
 version: '2'
 services:
+  datastore:
+    image: "busybox"
+    volumes:
+      - mysql-data:/var/lib/mysql
   rails: &app_base
     build:
       context: .
@@ -16,7 +20,7 @@ services:
     ports:
       - "3000:3000"
     links:
-      - db
+      - mysql
     tty: true
     stdin_open: true
   spring:
@@ -41,8 +45,13 @@ services:
       - "3306:3306"
     volumes_from:
       - datastore
-
-  datastore:
-    image: "busybox"
-    volumes:
-      - "mysql-data:/var/lib/mysql"
+      
+volumes:
+  mysql-data:
+    driver: local
+  bundle_install:
+    driver: local
+  bundle:
+    driver: local
+  node_modules:
+    driver: local
