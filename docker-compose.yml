@@ -1,0 +1,48 @@
+version: '2'
+services:
+  rails: &app_base
+    build:
+      context: .
+      dockerfile: "Dockerfile.development"
+    command: "bundle exec rails s -p 3000 -b '0.0.0.0'"
+    environment:
+      - "DATABASE_HOST=mysql"
+      - "DATABASE_PORT=3306"
+      - "DATABASE_NAME=mysql_db"
+      - "DATABASE_USER=mysql_user"
+      - "DATABASE_PASSWORD=mysql_password"
+    volumes:
+      - ".:/app"
+    ports:
+      - "3000:3000"
+    links:
+      - db
+    tty: true
+    stdin_open: true
+  spring:
+    <<: *app_base
+    command: "bundle exec spring server"
+    ports: []
+    tty: false
+    stdin_open: false
+
+  mysql:
+    container_name: mysql
+    image: mysql:5.6
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: mysql_db
+      MYSQL_USER: mysql_user
+      MYSQL_PASSWORD: mysql_password
+    networks:
+      - default
+    ports:
+      - "3306:3306"
+    volumes_from:
+      - datastore
+
+  datastore:
+    image: "busybox"
+    volumes:
+      - "mysql-data:/var/lib/mysql"
